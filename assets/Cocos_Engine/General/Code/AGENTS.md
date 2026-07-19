@@ -8,12 +8,14 @@ Reusable Cocos Creator TypeScript components.
 
 - `adaptive/` — orientation and responsive layout helpers.
 - `export/` — playable/export and download-button helpers.
-- `limit/` — camera/position clamps.
+- `grid/` — grid-coordinate services.
+- `limit/ — camera/position clamps.
 - `localisation/` — localization data and localized renderers.
 - `misc/` — small utility components.
 - `movement/` — movement/follow helpers.
 - `score/` — score model/display helpers.
-- `ui/` — generic UI component helpers.
+- `tile/` — tile renderers and views.
+- `ui/ — generic UI component helpers.
 
 ## Local Contracts
 

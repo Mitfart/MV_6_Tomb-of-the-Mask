@@ -16,10 +16,13 @@ Cocos Creator 3.8.8 playable: **Tomb of the Mask: Old Maze**. The implementation
 - For editor-owned assets (`.scene`, `.prefab`, `.anim`, `.mat`, `.material`, `.asset`, `.meta`), use the Cocos CodeMode/editor workflow; do not edit them directly.
 - Do not modify generated directories: `library/`, `temp/`, `local/`, `build/`, `native/`.
 - Preserve public component APIs unless all callers change together. No speculative abstractions, factories, or one-implementation interfaces.
+- Art names: `e_` enemies (need Player-damaging HitBox), `item_` collectibles, `tile_` walls; tile suffixes use `t/l/r/b/c`, with `i` for inner corners. Dual-grid uses 15 separately assigned frames; do not rotate frames.
 
 ## Layout
 
 - `assets/Cocos_Engine/` — shared reusable Cocos components and tutorial assets; read its contract before changes.
+- `assets/Infrastructure/` — GameManager and code-configured LevelLibrary.
+- `assets/Gameplay/` — grid, level rendering/building, and Player components.
 - `assets/scene.scene` — main editor-owned scene.
 - `_TASK/` — playable specification.
 - `extensions/` — local Cocos extensions.

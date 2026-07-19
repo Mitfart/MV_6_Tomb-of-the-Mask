@@ -7,6 +7,8 @@
 ## Core terms
 
 - **Player**: swipe-controlled maze character.
+- **Swipe run**: Player travels in one cardinal direction from its current cell to last free cell before a wall; speed affects only travel time.
+- **Level map**: authored character grid holding terrain and cell content; Dual-grid derives numeric terrain data from it. `#` wall, `.` empty floor, `P` Player spawn; future passable cell content uses `o` dot, `C` coin, `B` coin boost, `F` freeze, `M` magnet. Its world origin is center cell `(0,0)` and its outer edge is walls.
 - **Loot / boost**: prominent collectible that changes the current play segment: coin conversion, freeze, or magnet.
 - **Coin boost**: turns dots into coins sequentially.
 - **Freeze boost**: pauses traps for the full hazardous segment; traps cannot hurt the player while frozen.
