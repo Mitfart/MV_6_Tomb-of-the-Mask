@@ -824,12 +824,12 @@
     "grid": {
       "__id__": 10
     },
-    "body": {
-      "__id__": 19
-    },
     "cellsPerSecond": 10,
     "trail": {
       "__id__": 13
+    },
+    "visual": {
+      "__id__": 16
     },
     "_id": "daXR8fxsRMKJDSKULh3IcK"
   },

@@ -1,4 +1,4 @@
-import { _decorator, Component, input, Input, Node, RigidBody2D, Vec2, Vec3 } from 'cc';
+import { _decorator, Component, input, Input, Node, UITransform, Vec2, Vec3 } from 'cc';
 import { GridService } from '../../Cocos_Engine/General/Code/grid/GridService';
 
 const { ccclass, property } = _decorator;
@@ -8,18 +8,20 @@ export class PlayerController extends Component {
     @property(GridService)
     public grid: GridService | null = null;
 
-    @property(RigidBody2D)
-    public body: RigidBody2D | null = null;
-
     @property
     public cellsPerSecond = 10;
 
     @property(Node)
     public trail: Node | null = null;
 
+    @property(Node)
+    public visual: Node | null = null;
+
     private level: readonly (readonly string[])[] = [];
     private cell = new Vec2();
     private target: Vec3 | null = null;
+    private moveStart = new Vec3();
+    private trailOffset = new Vec3();
     private touchStart = new Vec2();
 
     protected onEnable(): void {
@@ -37,18 +39,33 @@ export class PlayerController extends Component {
         this.cell.set(startColumn, startRow);
         const position = this.grid?.cellToWorld(startColumn, startRow);
         if (position) this.node.setPosition(position);
-        if (this.trail) this.trail.active = false;
+        if (this.trail) {
+            this.trail.active = true;
+            this.trail.setScale(0, 0, 1);
+        }
     }
 
     protected update(deltaTime: number): void {
-        if (!this.target || !this.grid || !this.body) return;
+        if (!this.grid) return;
+        if (!this.target) {
+            this.retractTrail(deltaTime);
+            return;
+        }
         const remaining = Vec3.distance(this.node.position, this.target);
-        if (remaining > this.cellsPerSecond * this.grid.cellSize * deltaTime) return;
+        const step = this.cellsPerSecond * this.grid.cellSize * deltaTime;
+        if (remaining <= step) {
+            this.node.setPosition(this.target);
+            this.updateTrail();
+            this.target = null;
+            return;
+        }
 
-        this.node.setPosition(this.target);
-        this.body.linearVelocity = Vec2.ZERO;
-        this.target = null;
-        if (this.trail) this.trail.active = false;
+        const position = this.node.position;
+        this.node.setPosition(
+            position.x + (this.target.x - position.x) * step / remaining,
+            position.y + (this.target.y - position.y) * step / remaining,
+        );
+        this.updateTrail();
     }
 
     private onTouchStart(event: any): void {
@@ -57,7 +74,7 @@ export class PlayerController extends Component {
     }
 
     private onTouchEnd(event: any): void {
-        if (this.target || !this.grid || !this.body || this.level.length === 0) return;
+        if (this.target || !this.grid || this.level.length === 0) return;
         const point = event.getLocation();
         const delta = new Vec2(point.x - this.touchStart.x, point.y - this.touchStart.y);
         if (delta.length() < 20) return;
@@ -69,15 +86,43 @@ export class PlayerController extends Component {
         if (targetCell.equals(this.cell)) return;
 
         this.cell = targetCell;
+        if (this.visual) this.visual.angle = direction.x > 0 ? 90 : direction.x < 0 ? -90 : direction.y > 0 ? 180 : 0;
+        this.moveStart.set(this.node.position);
+        this.trailOffset.set(-direction.x * this.grid.cellSize * 0.5, -direction.y * this.grid.cellSize * 0.5);
         this.target = this.grid.cellToWorld(targetCell.x, targetCell.y);
         if (this.trail) {
-            this.trail.angle = direction.x > 0 ? 0 : direction.x < 0 ? 180 : direction.y > 0 ? 90 : -90;
+            this.trail.angle = (direction.x > 0 ? 0 : direction.x < 0 ? 180 : direction.y > 0 ? 90 : -90) - 90;
+            this.trail.setScale(0, 0, 1);
             this.trail.active = true;
+            this.updateTrail();
         }
-        this.body.linearVelocity = new Vec2(
-            direction.x * this.cellsPerSecond * this.grid.cellSize,
-            -direction.y * this.cellsPerSecond * this.grid.cellSize,
+    }
+
+    private updateTrail(): void {
+        if (!this.trail || !this.grid) return;
+        const trailTransform = this.trail.getComponent(UITransform);
+        if (!trailTransform) {
+            console.error('[PlayerController] Trail missing UITransform');
+            return;
+        }
+
+        const position = this.node.position;
+        const cellsTravelled = Vec3.distance(this.moveStart, position) / this.grid.cellSize;
+        trailTransform.setContentSize(this.grid.cellSize, this.grid.cellSize);
+        this.trail.setScale(Math.min(1, cellsTravelled * 0.5), cellsTravelled, 1);
+        this.trail.setPosition(
+            (this.moveStart.x - position.x) * 0.5 + this.trailOffset.x,
+            (this.moveStart.y - position.y) * 0.5 + this.trailOffset.y,
         );
+    }
+
+    private retractTrail(deltaTime: number): void {
+        if (!this.trail) return;
+        const scaleX = Math.max(0, this.trail.scale.x - deltaTime * 12);
+        const scaleY = Math.max(0, this.trail.scale.y - deltaTime * 12);
+        const positionScale = this.trail.scale.y === 0 ? 0 : scaleY / this.trail.scale.y;
+        this.trail.setScale(scaleX, scaleY, 1);
+        this.trail.setPosition(this.trail.position.x * positionScale, this.trail.position.y * positionScale);
     }
 
     private findTarget(direction: Readonly<Vec2>): Vec2 {
