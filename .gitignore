@@ -1,0 +1,43 @@
+#///////////////////////////
+# Cocos Creator 3D Project
+#///////////////////////////
+library/
+temp/
+local/
+build/
+profiles/
+native
+
+#//////////////////////////
+# NPM
+#//////////////////////////
+node_modules/
+
+#//////////////////////////
+# VSCode
+#//////////////////////////
+.vscode/
+
+#//////////////////////////
+# WebStorm
+#//////////////////////////
+.idea/
+
+# Large source/deliverable files. Keep scripts, sprites, and audio tracked.
+*.7z
+*.bz2
+*.doc
+*.docx
+*.gz
+*.mov
+*.mp4
+*.pdf
+*.ppt
+*.pptx
+*.rar
+*.tar
+*.tgz
+*.webm
+*.xls
+*.xlsx
+*.zip

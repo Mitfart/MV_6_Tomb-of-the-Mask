@@ -1,0 +1,25 @@
+GIMP Palette
+#Palette Name: Godscrown
+#Description: A palette for a cosmic horror card game I'm working on called Godscrown! The game features three types of horror, Anomaly (Using purple), Arcane (Using blue), and Monstrosity (Using red). The setting is noir, so the grayscale ramp is used to create that noire harsh lighting with harsh contrasts between the darker and lighter ends. The three colors used blend to the darkest purple color, allowing each to work fairly welll together in a Cosmic Horror piece (which features all colors)
+#Colors: 21
+0	0	0	000000
+15	15	15	0f0f0f
+23	23	23	171717
+34	34	34	222222
+47	47	47	2f2f2f
+62	62	62	3e3e3e
+87	87	87	575757
+119	119	119	777777
+156	156	156	9c9c9c
+202	202	202	cacaca
+255	255	254	fffffe
+21	5	45	15052d
+47	12	89	2f0c59
+89	25	154	59199a
+149	44	245	952cf5
+32	31	88	201f58
+38	84	150	265496
+36	174	235	24aeeb
+62	14	49	3e0e31
+136	27	48	881b30
+255	42	42	ff2a2a
