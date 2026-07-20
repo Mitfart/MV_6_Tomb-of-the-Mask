@@ -26,7 +26,7 @@ Cocos Creator 3.8.8 playable: **Tomb of the Mask: Old Maze**. Shared engine: `as
 ## Layout
 
 - `assets/Cocos_Engine/` shared components; read child contract before changes.
-- `assets/Infrastructure/` composition/level config; `assets/Gameplay/` level/player behavior.
+- `assets/Code/Infrastructure/` composition/level config; `assets/Code/Gameplay/` level/player behavior; `assets/Code/UI/` UI behavior.
 - `assets/scene.scene` main editor scene; `_TASK/MV 6.md` full spec.
 
 ## Verification

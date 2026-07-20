@@ -1,5 +1,5 @@
 import { _decorator, Component, input, Input, Node, UITransform, Vec2, Vec3 } from 'cc';
-import { GridService } from '../../Cocos_Engine/General/Code/grid/GridService';
+import { GridService } from '../../../Cocos_Engine/General/Code/grid/GridService';
 import { PlayerDamage } from './PlayerDamage';
 
 const { ccclass, property } = _decorator;

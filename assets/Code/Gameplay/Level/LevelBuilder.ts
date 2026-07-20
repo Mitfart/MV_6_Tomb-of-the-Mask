@@ -1,25 +1,41 @@
-import { _decorator, Component, instantiate, Node, Prefab } from 'cc';
-import { GridService } from '../../Cocos_Engine/General/Code/grid/GridService';
-import { HalfTileLite } from '../../Cocos_Engine/General/Code/tile/HalfTileLite';
+import { _decorator, Component, instantiate, Node, Prefab, Vec3 } from 'cc';
+import { GridService } from '../../../Cocos_Engine/General/Code/grid/GridService';
+import { HalfTileLite } from '../../../Cocos_Engine/General/Code/tile/HalfTileLite';
 import { DoubleTileRenderer } from './DoubleTileRenderer';
 import { PlayerController } from '../Player/PlayerController';
 import { PlayerDamage, PLAYER_DIED } from '../Player/PlayerDamage';
+import { Collectible, CollectibleKind } from '../Collectibles/Collectible';
+import { UI_GameController } from '../../UI/UI_GameController';
 import type { LevelConfig } from '../../Infrastructure/LevelLibrary';
 
 const { ccclass, property } = _decorator;
 
 @ccclass('LevelBuilder')
 export class LevelBuilder extends Component {
-    @property(GridService) public grid!: GridService;
-    @property(DoubleTileRenderer) public tileRenderer!: DoubleTileRenderer;
-    @property(Prefab) public playerPrefab!: Prefab;
-    @property(Node) public playerParent!: Node;
-    @property(Prefab) public wallColliderPrefab!: Prefab;
-    @property(Node) public wallParent!: Node;
-    @property(Prefab) public spikePrefab!: Prefab;
-    @property(Node) public spikeParent!: Node;
+    @property({ type: GridService, group: { name: 'Level' } }) public grid!: GridService;
+    @property({ type: DoubleTileRenderer, group: { name: 'Level' } }) public tileRenderer!: DoubleTileRenderer;
+
+    @property({ type: Prefab, group: { name: 'Player' } }) public playerPrefab!: Prefab;
+    @property({ type: Node, group: { name: 'Player' } }) public playerParent!: Node;
+
+    @property({ type: Prefab, group: { name: 'Walls' } }) public wallColliderPrefab!: Prefab;
+    @property({ type: Node, group: { name: 'Walls' } }) public wallParent!: Node;
+    @property({ type: Prefab, group: { name: 'Spikes' } }) public spikePrefab!: Prefab;
+    @property({ type: Node, group: { name: 'Spikes' } }) public spikeParent!: Node;
+
+    @property({ type: Prefab, group: { name: 'Collectibles' } }) public pointPrefab: Prefab | null = null;
+    @property({ type: Prefab, group: { name: 'Collectibles' } }) public coinPrefab: Prefab | null = null;
+    @property({ type: Prefab, group: { name: 'Collectibles' } }) public coinBoostPrefab: Prefab | null = null;
+    @property({ type: Node, group: { name: 'Collectibles' } }) public collectibleParent: Node | null = null;
+    @property({ group: { name: 'Collectibles' } }) public coinWaveDelayPerCell = 0.04;
 
     private player: PlayerController | null = null;
+    private ui: UI_GameController | null = null;
+    private collectibles: Collectible[] = [];
+
+    public setUIController(ui: UI_GameController | null): void {
+        this.ui = ui;
+    }
 
     public build(config: LevelConfig): void {
         const level = config.cells;
@@ -31,6 +47,9 @@ export class LevelBuilder extends Component {
         this.grid.configure(level[0].length, level.length);
         this.wallParent.removeAllChildren();
         this.spikeParent.removeAllChildren();
+        this.collectibleParent?.removeAllChildren();
+        this.collectibles = [];
+        this.ui?.resetCoins();
         this.tileRenderer.render(level);
         for (let row = 0; row < level.length; row++) for (let column = 0; column < level[row].length; column++) {
             const cell = level[row][column];
@@ -69,7 +88,38 @@ export class LevelBuilder extends Component {
         player.grid = this.grid;
         damage.node.on(PLAYER_DIED, this.onPlayerDied, this);
         player.configure(level, start.x, start.y);
+        this.spawnCollectibles(config, player);
     }
+
+    private spawnCollectibles(config: LevelConfig, player: PlayerController): void {
+        if (!this.collectibleParent) return;
+        for (const item of config.collectibles ?? []) {
+            const prefab = item.kind === 'point' ? this.pointPrefab : item.kind === 'coin' ? this.coinPrefab : this.coinBoostPrefab;
+            if (!prefab) {
+                console.error(`[LevelBuilder] Missing ${item.kind} Prefab`);
+                return;
+            }
+            const node = instantiate(prefab);
+            const collectible = node.getComponent(Collectible);
+            if (!collectible) {
+                console.error('[LevelBuilder] Collectible Prefab missing Collectible');
+                node.destroy();
+                return;
+            }
+            node.setPosition(this.grid.cellToWorld(item.x, item.y));
+            this.collectibleParent.addChild(node);
+            collectible.configure(item.kind === 'point' ? CollectibleKind.Point : item.kind === 'coin' ? CollectibleKind.Coin : CollectibleKind.CoinBoost, player, this.ui, this.activateCoinBoost);
+            this.collectibles.push(collectible);
+        }
+    }
+
+    private activateCoinBoost = (center: Readonly<Vec3>): void => {
+        this.ui?.showCoinAddict();
+        for (const collectible of this.collectibles) {
+            const delay = Vec3.distance(center, collectible.node.worldPosition) / this.grid.cellSize * this.coinWaveDelayPerCell;
+            collectible.convertToCoin(delay);
+        }
+    };
 
     private onPlayerDied(): void { this.node.emit(PLAYER_DIED); }
 

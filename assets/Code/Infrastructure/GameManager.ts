@@ -2,6 +2,7 @@ import { _decorator, Component, Enum } from 'cc';
 import { LevelBuilder } from '../Gameplay/Level/LevelBuilder';
 import { PLAYER_DIED } from '../Gameplay/Player/PlayerDamage';
 import { LevelId, LevelLibrary } from './LevelLibrary';
+import { UI_GameController } from '../UI/UI_GameController';
 
 const { ccclass, property } = _decorator;
 
@@ -13,6 +14,9 @@ export class GameManager extends Component {
     @property({ type: Enum(LevelId) })
     public levelId = LevelId.Demo;
 
+    @property(UI_GameController)
+    public uiController: UI_GameController | null = null;
+
     protected onEnable(): void {
         this.levelBuilder?.node.on(PLAYER_DIED, this.onPlayerDied, this);
     }
@@ -22,6 +26,7 @@ export class GameManager extends Component {
     }
 
     protected start(): void {
+        this.levelBuilder?.setUIController(this.uiController);
         this.restart();
     }
 

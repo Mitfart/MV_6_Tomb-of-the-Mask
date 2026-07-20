@@ -1,6 +1,6 @@
 import { _decorator, Component, instantiate, Node, Prefab } from 'cc';
-import { GridService } from '../../Cocos_Engine/General/Code/grid/GridService';
-import { HalfTile } from '../../Cocos_Engine/General/Code/tile/HalfTile';
+import { GridService } from '../../../Cocos_Engine/General/Code/grid/GridService';
+import { HalfTile } from '../../../Cocos_Engine/General/Code/tile/HalfTile';
 
 const { ccclass, property } = _decorator;
 
