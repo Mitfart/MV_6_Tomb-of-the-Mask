@@ -11,7 +11,7 @@
     "6c48a": {
       "importer": "texture",
       "uuid": "95bfeaff-ed01-4269-8c49-2e77306370c6@6c48a",
-      "displayName": "e_spikes_v3",
+      "displayName": "e_spike",
       "id": "6c48a",
       "name": "texture",
       "userData": {
@@ -35,7 +35,7 @@
     "f9941": {
       "importer": "sprite-frame",
       "uuid": "95bfeaff-ed01-4269-8c49-2e77306370c6@f9941",
-      "displayName": "e_spikes_v3",
+      "displayName": "e_spike",
       "id": "f9941",
       "name": "spriteFrame",
       "userData": {
@@ -45,10 +45,10 @@
         "offsetY": 0,
         "trimX": 0,
         "trimY": 0,
-        "width": 12,
-        "height": 12,
-        "rawWidth": 12,
-        "rawHeight": 12,
+        "width": 6,
+        "height": 6,
+        "rawWidth": 6,
+        "rawHeight": 6,
         "borderTop": 0,
         "borderBottom": 0,
         "borderLeft": 0,
@@ -60,17 +60,17 @@
         "meshType": 0,
         "vertices": {
           "rawPosition": [
-            -6,
-            -6,
+            -3,
+            -3,
             0,
-            6,
-            -6,
+            3,
+            -3,
             0,
-            -6,
-            6,
+            -3,
+            3,
             0,
-            6,
-            6,
+            3,
+            3,
             0
           ],
           "indexes": [
@@ -83,12 +83,12 @@
           ],
           "uv": [
             0,
-            12,
-            12,
-            12,
+            6,
+            6,
+            6,
             0,
             0,
-            12,
+            6,
             0
           ],
           "nuv": [
@@ -102,13 +102,13 @@
             1
           ],
           "minPos": [
-            -6,
-            -6,
+            -3,
+            -3,
             0
           ],
           "maxPos": [
-            6,
-            6,
+            3,
+            3,
             0
           ]
         },
