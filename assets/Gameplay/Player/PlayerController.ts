@@ -27,6 +27,7 @@ export class PlayerController extends Component {
     private moveStart = new Vec3();
     private trailOffset = new Vec3();
     private hitSpike = false;
+    private dead = false;
     private touchStart = new Vec2();
 
     protected onEnable(): void {
@@ -40,6 +41,7 @@ export class PlayerController extends Component {
     }
 
     public configure(level: readonly (readonly string[])[], startColumn: number, startRow: number): void {
+        this.dead = false;
         this.level = level;
         this.cell.set(startColumn, startRow);
         const position = this.grid?.cellToWorld(startColumn, startRow);
@@ -62,7 +64,7 @@ export class PlayerController extends Component {
             this.node.setPosition(this.target);
             this.updateTrail();
             this.target = null;
-            if (this.hitSpike) this.damageReceiver?.damage();
+            if (this.hitSpike) this.damage();
             return;
         }
 
@@ -80,7 +82,7 @@ export class PlayerController extends Component {
     }
 
     private onTouchEnd(event: any): void {
-        if (this.target || !this.grid || this.level.length === 0) return;
+        if (this.dead || this.target || !this.grid || this.level.length === 0) return;
         const point = event.getLocation();
         const delta = new Vec2(point.x - this.touchStart.x, point.y - this.touchStart.y);
         if (delta.length() < 20) return;
@@ -91,7 +93,13 @@ export class PlayerController extends Component {
         this.hitSpike = false;
         const targetCell = this.findTarget(direction);
         if (targetCell.equals(this.cell)) {
-            if (this.hitSpike) this.damageReceiver?.damage();
+            if (this.hitSpike) {
+                this.node.setPosition(
+                    this.node.position.x + direction.x * this.grid.cellSize * 0.5,
+                    this.node.position.y + direction.y * this.grid.cellSize * 0.5,
+                );
+                this.damage();
+            }
             return;
         }
 
@@ -133,6 +141,17 @@ export class PlayerController extends Component {
         const positionScale = this.trail.scale.y === 0 ? 0 : scaleY / this.trail.scale.y;
         this.trail.setScale(scaleX, scaleY, 1);
         this.trail.setPosition(this.trail.position.x * positionScale, this.trail.position.y * positionScale);
+    }
+
+    public die(): void {
+        this.dead = true;
+        this.target = null;
+        this.updateTrail();
+    }
+
+    private damage(): void {
+        this.die();
+        this.damageReceiver?.damage();
     }
 
     private findTarget(direction: Readonly<Vec2>): Vec2 {
