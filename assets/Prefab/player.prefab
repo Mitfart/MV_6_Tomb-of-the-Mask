@@ -230,7 +230,7 @@
     },
     "_fillStart": 0,
     "_fillRange": 0,
-    "_isTrimmedMode": true,
+    "_isTrimmedMode": false,
     "_useGrayscale": false,
     "_atlas": null,
     "_id": ""
@@ -379,7 +379,7 @@
     },
     "_fillStart": 0,
     "_fillRange": 0,
-    "_isTrimmedMode": true,
+    "_isTrimmedMode": false,
     "_useGrayscale": false,
     "_atlas": null,
     "_id": ""
@@ -497,6 +497,7 @@
       "__id__": 0
     },
     "fileId": "c7rwsYXl5I2KLTVvD+PoPZ",
+    "instance": null,
     "targetOverrides": []
   }
 ]
