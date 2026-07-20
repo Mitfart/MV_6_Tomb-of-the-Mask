@@ -3,6 +3,7 @@ import { GridService } from '../../Cocos_Engine/General/Code/grid/GridService';
 import { HalfTileLite } from '../../Cocos_Engine/General/Code/tile/HalfTileLite';
 import { DoubleTileRenderer } from './DoubleTileRenderer';
 import { PlayerController } from '../Player/PlayerController';
+import { PlayerDamage, PLAYER_DIED } from '../Player/PlayerDamage';
 import type { LevelConfig } from '../../Infrastructure/LevelLibrary';
 
 const { ccclass, property } = _decorator;
@@ -11,11 +12,14 @@ const { ccclass, property } = _decorator;
 export class LevelBuilder extends Component {
     @property(GridService) public grid!: GridService;
     @property(DoubleTileRenderer) public tileRenderer!: DoubleTileRenderer;
-    @property(PlayerController) public player!: PlayerController;
+    @property(Prefab) public playerPrefab!: Prefab;
+    @property(Node) public playerParent!: Node;
     @property(Prefab) public wallColliderPrefab!: Prefab;
     @property(Node) public wallParent!: Node;
     @property(Prefab) public spikePrefab!: Prefab;
     @property(Node) public spikeParent!: Node;
+
+    private player: PlayerController | null = null;
 
     public build(config: LevelConfig): void {
         const level = config.cells;
@@ -51,8 +55,23 @@ export class LevelBuilder extends Component {
                 this.spikeParent.addChild(spike);
             }
         }
-        this.player.configure(level, start.x, start.y);
+        this.player?.node.destroy();
+        const playerNode = instantiate(this.playerPrefab);
+        this.playerParent.addChild(playerNode);
+        const player = playerNode.getComponent(PlayerController);
+        const damage = playerNode.getComponent(PlayerDamage);
+        if (!player || !damage) {
+            console.error('[LevelBuilder] Player Prefab missing PlayerController or PlayerDamage');
+            playerNode.destroy();
+            return;
+        }
+        this.player = player;
+        player.grid = this.grid;
+        damage.node.on(PLAYER_DIED, this.onPlayerDied, this);
+        player.configure(level, start.x, start.y);
     }
+
+    private onPlayerDied(): void { this.node.emit(PLAYER_DIED); }
 
     private validate(level: readonly (readonly string[])[]): { x: number; y: number } | null {
         if (level.length < 3 || level.some(row => row.length !== level[0].length || row.some(cell => cell.length !== 4))) return null;
