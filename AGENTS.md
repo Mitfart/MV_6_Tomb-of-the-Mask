@@ -1,33 +1,34 @@
-# DOX framework
+# DOX
 
-- DOX is the `AGENTS.md` hierarchy for this repo. Read this file and every child `AGENTS.md` on the target path before editing.
-- Keep docs concise and operational. Update the nearest contract after durable workflow or structure changes.
+Read this contract plus child `AGENTS.md` files on target path before editing. Keep contracts operational and update nearest one after durable changes.
 
 ## Project
 
-Cocos Creator 3.8.8 playable: **Tomb of the Mask: Old Maze**. The implementation reuses the shared engine under `assets/Cocos_Engine/`.
+Cocos Creator 3.8.8 playable: **Tomb of the Mask: Old Maze**. Shared engine: `assets/Cocos_Engine/`.
 
-## Working rules
+## Workflow
 
-- Default communication: `skill://caveman` unless the user requests otherwise.
-- Before adding a component, helper, or system, inspect and reuse existing project code—especially `assets/Cocos_Engine/`—when it fits.
-- Prefer composing/configuring existing Cocos Engine components over creating replacements. Tell the user when an existing engine component is the better choice.
-- Use native Cocos components/APIs before custom code. Add code only for game-specific behavior the engine does not cover.
-- For editor-owned assets (`.scene`, `.prefab`, `.anim`, `.mat`, `.material`, `.asset`, `.meta`), use the Cocos CodeMode/editor workflow; do not edit them directly.
-- Do not modify generated directories: `library/`, `temp/`, `local/`, `build/`, `native/`.
-- Preserve public component APIs unless all callers change together. No speculative abstractions, factories, or one-implementation interfaces.
-- Art names: `e_` enemies (need Player-damaging HitBox), `item_` collectibles, `tile_` walls; tile suffixes use `t/l/r/b/c`, with `i` for inner corners. Dual-grid uses 15 separately assigned frames; do not rotate frames.
+- English, terse/caveman. Smallest correct change; no speculative abstractions.
+- Reuse project/engine code; prefer native Cocos APIs.
+- Typed `getComponent(Type)` only; never string lookup.
+- User owns scene/prefab wiring. Give manual Creator steps; CodeMode/MCP only on explicit request.
+- Never direct-edit `.scene`, `.prefab`, `.anim`, `.mat`, `.material`, `.asset`, `.meta`; never modify `library/`, `temp/`, `local/`, `build/`, `native/`.
+- Preserve unrelated work: check `git status`; one feature/change per commit.
+- Visual changes: code + smallest check, then user validates exact playable export; request console/screenshot for failures.
+
+## Game contracts
+
+- Level cell: `[top, down, left, right]`; `#` wall, `^` spike, `.` empty, `P` spawn.
+- `DoubleTileRenderer`: exposed-side corner/line/inner-corner frames; spikes use directional `HalfTileLite`.
+- `LevelBuilder` spawns `player.prefab`, forwards `PLAYER_DIED` to `GameManager`; scene assigns Player Prefab + dedicated Player Parent.
+- Art: `e_` enemies require Player-damaging HitBox; `item_` collectibles; `tile_` walls. Tile suffixes `t/l/r/b/c`, `i` inner corner. Do not rotate 15-frame dual-grid art.
 
 ## Layout
 
-- `assets/Cocos_Engine/` — shared reusable Cocos components and tutorial assets; read its contract before changes.
-- `assets/Infrastructure/` — GameManager and code-configured LevelLibrary.
-- `assets/Gameplay/` — grid, level rendering/building, and Player components.
-- `assets/scene.scene` — main editor-owned scene.
-- `_TASK/` — playable specification.
-- `extensions/` — local Cocos extensions.
+- `assets/Cocos_Engine/` shared components; read child contract before changes.
+- `assets/Infrastructure/` composition/level config; `assets/Gameplay/` level/player behavior.
+- `assets/scene.scene` main editor scene; `_TASK/MV 6.md` full spec.
 
 ## Verification
 
-- Run the smallest relevant TypeScript/Cocos validation available after code changes.
-- Validate editor-owned changes in Cocos Creator through CodeMode, then inspect the console.
+Run smallest relevant TypeScript/Cocos check. Editor-owned changes need Creator validation + console inspection.
