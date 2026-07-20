@@ -52,6 +52,18 @@ export class DualGridTile extends Component {
     @property({ type: SpriteFrame, displayName: 'Center' })
     public center: SpriteFrame | null = null;
 
+    @property({ type: SpriteFrame, displayName: 'Spikes/Line' })
+    public spikeLine: SpriteFrame | null = null;
+
+    @property({ type: SpriteFrame, displayName: 'Spikes/Corner' })
+    public spikeCorner: SpriteFrame | null = null;
+
+    @property({ type: SpriteFrame, displayName: 'Spikes/Inner corner' })
+    public spikeInnerCorner: SpriteFrame | null = null;
+
+    @property({ type: SpriteFrame, displayName: 'Spikes/Diagonal' })
+    public spikeDiagonal: SpriteFrame | null = null;
+
     public setVariant(variant: number): void {
         if (!this.sprite) {
             console.error('[DualGridTile] Missing sprite');
@@ -82,5 +94,19 @@ export class DualGridTile extends Component {
         }
 
         this.sprite.spriteFrame = frame;
+    }
+
+    public setSpikeVariant(variant: number): void {
+        if (!this.sprite) return;
+        const spike = variant === 3 || variant === 5 || variant === 10 || variant === 12 ? this.spikeLine
+            : variant === 1 || variant === 2 || variant === 4 || variant === 8 ? this.spikeCorner
+                : variant === 7 || variant === 11 || variant === 13 || variant === 14 ? this.spikeInnerCorner
+                    : variant === 6 || variant === 9 ? this.spikeDiagonal : null;
+        if (!spike) {
+            console.error(`[DualGridTile] Missing spike frame for variant ${variant}`);
+            return;
+        }
+        this.sprite.spriteFrame = spike;
+        this.node.angle = [0, 90, 180, -90][[3, 5, 12, 10].indexOf(variant)] ?? 0;
     }
 }
