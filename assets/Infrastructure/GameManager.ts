@@ -1,5 +1,6 @@
 import { _decorator, Component, Enum } from 'cc';
 import { LevelBuilder } from '../Gameplay/Level/LevelBuilder';
+import { PlayerDamage, PLAYER_DIED } from '../Gameplay/Player/PlayerDamage';
 import { LevelId, LevelLibrary } from './LevelLibrary';
 
 const { ccclass, property } = _decorator;
@@ -12,11 +13,31 @@ export class GameManager extends Component {
     @property({ type: Enum(LevelId) })
     public levelId = LevelId.Demo;
 
+    @property(PlayerDamage)
+    public playerDamage: PlayerDamage | null = null;
+
+    protected onEnable(): void {
+        this.playerDamage?.node.on(PLAYER_DIED, this.onPlayerDied, this);
+    }
+
+    protected onDisable(): void {
+        this.playerDamage?.node.off(PLAYER_DIED, this.onPlayerDied, this);
+    }
+
     protected start(): void {
+        this.restart();
+    }
+
+    private onPlayerDied(): void {
+        this.scheduleOnce(this.restart, 0.5);
+    }
+
+    private restart(): void {
         if (!this.levelBuilder) {
             console.error('[GameManager] Missing levelBuilder');
             return;
         }
+        this.playerDamage?.reset();
         this.levelBuilder.build(LevelLibrary.get(this.levelId));
     }
 }

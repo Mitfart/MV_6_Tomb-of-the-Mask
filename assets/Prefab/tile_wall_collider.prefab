@@ -1,7 +1,7 @@
 [
   {
     "__type__": "cc.Prefab",
-    "_name": "wall_collider",
+    "_name": "tile_wall_collider",
     "_objFlags": 0,
     "__editorExtras__": {},
     "_native": "",
@@ -13,7 +13,7 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "wall_collider",
+    "_name": "tile_wall_collider",
     "_objFlags": 0,
     "__editorExtras__": {},
     "_parent": null,
@@ -85,7 +85,7 @@
   },
   {
     "__type__": "cc.CompPrefabInfo",
-    "fileId": "a7xuxrOapBSZNce44jCCeZ"
+    "fileId": "69iaPaffVBCIyaXS3k2dZZ"
   },
   {
     "__type__": "cc.BoxCollider2D",
@@ -119,7 +119,7 @@
   },
   {
     "__type__": "cc.CompPrefabInfo",
-    "fileId": "1fIy56xy5EsbRe5bUJy7qn"
+    "fileId": "1droO6ADpM3Jkv8rLDDLyC"
   },
   {
     "__type__": "cc.PrefabInfo",
@@ -129,7 +129,8 @@
     "asset": {
       "__id__": 0
     },
-    "fileId": "22A2XrBtNLcqxmAnvV4Ng/",
+    "fileId": "5eUYVZW15Jtqm1OPmj2Vs5",
+    "instance": null,
     "targetOverrides": null
   }
 ]

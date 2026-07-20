@@ -1,5 +1,6 @@
 import { _decorator, Component, input, Input, Node, UITransform, Vec2, Vec3 } from 'cc';
 import { GridService } from '../../Cocos_Engine/General/Code/grid/GridService';
+import { PlayerDamage } from './PlayerDamage';
 
 const { ccclass, property } = _decorator;
 
@@ -17,11 +18,15 @@ export class PlayerController extends Component {
     @property(Node)
     public visual: Node | null = null;
 
+    @property(PlayerDamage)
+    public damageReceiver: PlayerDamage | null = null;
+
     private level: readonly (readonly string[])[] = [];
     private cell = new Vec2();
     private target: Vec3 | null = null;
     private moveStart = new Vec3();
     private trailOffset = new Vec3();
+    private hitSpike = false;
     private touchStart = new Vec2();
 
     protected onEnable(): void {
@@ -57,6 +62,7 @@ export class PlayerController extends Component {
             this.node.setPosition(this.target);
             this.updateTrail();
             this.target = null;
+            if (this.hitSpike) this.damageReceiver?.damage();
             return;
         }
 
@@ -82,8 +88,12 @@ export class PlayerController extends Component {
         const direction = Math.abs(delta.x) >= Math.abs(delta.y)
             ? new Vec2(Math.sign(delta.x), 0)
             : new Vec2(0, Math.sign(delta.y));
+        this.hitSpike = false;
         const targetCell = this.findTarget(direction);
-        if (targetCell.equals(this.cell)) return;
+        if (targetCell.equals(this.cell)) {
+            if (this.hitSpike) this.damageReceiver?.damage();
+            return;
+        }
 
         this.cell = targetCell;
         if (this.visual) this.visual.angle = direction.x > 0 ? 90 : direction.x < 0 ? -90 : direction.y > 0 ? 180 : 0;
@@ -129,10 +139,13 @@ export class PlayerController extends Component {
         const candidate = this.cell.clone();
         while (true) {
             const next = new Vec2(candidate.x + direction.x, candidate.y - direction.y);
-            if (next.y < 0 || next.y >= this.level.length || next.x < 0 || next.x >= this.level[0].length || this.level[next.y][next.x] === '#') {
+            if (next.y < 0 || next.y >= this.level.length || next.x < 0 || next.x >= this.level[0].length || this.isWall(this.level[next.y][next.x])) {
+                this.hitSpike = this.level[next.y]?.[next.x].includes('^') || false;
                 return candidate;
             }
             candidate.set(next);
         }
     }
+
+    private isWall(cell: string | undefined): boolean { return cell?.includes('#') || cell?.includes('^') || false; }
 }

@@ -2,12 +2,12 @@
   "ver": "1.1.50",
   "importer": "prefab",
   "imported": true,
-  "uuid": "0dcc53a2-a800-4abf-a50f-83947d92b74f",
+  "uuid": "5d03410c-43ec-4a0c-a185-385945c5c252",
   "files": [
     ".json"
   ],
   "subMetas": {},
   "userData": {
-    "syncNodeName": "wall_collider"
+    "syncNodeName": "tile_spike"
   }
 }

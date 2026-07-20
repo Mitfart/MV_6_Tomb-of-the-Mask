@@ -2,12 +2,12 @@
   "ver": "1.1.50",
   "importer": "prefab",
   "imported": true,
-  "uuid": "1ceef50b-f2df-4938-bcfc-f08c10e1a468",
+  "uuid": "25d5a14c-8abf-4d1e-b25c-22f40cc45cff",
   "files": [
     ".json"
   ],
   "subMetas": {},
   "userData": {
-    "syncNodeName": "wall_view"
+    "syncNodeName": "tile_wall_view"
   }
 }
