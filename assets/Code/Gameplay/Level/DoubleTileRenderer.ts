@@ -15,6 +15,7 @@ export class DoubleTileRenderer extends Component {
         const offset = this.grid.cellSize * 0.25;
 
         for (let row = 0; row < level.length; row++) for (let column = 0; column < level[row].length; column++) {
+            if (level[row][column].includes('T')) continue;
             const center = this.grid.cellToWorld(column, row);
             // Cell chars: [0] top, [1] down, [2] left, [3] right. # wall, ^ spike, . empty, P player.
             for (let halfRow = 0; halfRow < 2; halfRow++) for (let halfColumn = 0; halfColumn < 2; halfColumn++) {
@@ -73,8 +74,8 @@ export class DoubleTileRenderer extends Component {
     private isWall(level: readonly (readonly string[])[], column: number, row: number): boolean {
         if (row < 0 || row >= level.length * 2 || column < 0 || column >= level[0].length * 2) return false;
         const cell = level[Math.floor(row / 2)][Math.floor(column / 2)];
-        return this.isSolid(cell[row % 2]) || this.isSolid(cell[column % 2 + 2]);
+        return cell.includes('T') || this.isSolid(cell[row % 2]) || this.isSolid(cell[column % 2 + 2]);
     }
 
-    private isSolid(value: string): boolean { return value === '#' || value === '^'; }
+    private isSolid(value: string): boolean { return value === '#' || value === '^' || value === 'T'; }
 }

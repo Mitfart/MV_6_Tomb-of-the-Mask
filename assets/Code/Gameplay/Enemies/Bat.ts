@@ -1,9 +1,8 @@
 import { _decorator, Component, Vec3 } from 'cc';
 import { GridService } from '../../../Cocos_Engine/General/Code/grid/GridService';
+import { CellDirection, directionToDelta } from './CellDirection';
 
 const { ccclass, property } = _decorator;
-
-export type BatDirection = 'top' | 'down' | 'left' | 'right';
 
 @ccclass('Bat')
 export class Bat extends Component {
@@ -19,9 +18,9 @@ export class Bat extends Component {
     private target = new Vec3();
     private waitRemaining = 0;
 
-    public configure(grid: GridService, level: readonly (readonly string[])[], column: number, row: number, direction: BatDirection): void {
+    public configure(grid: GridService, level: readonly (readonly string[])[], column: number, row: number, direction: CellDirection): void {
         this.grid = grid;
-        const [deltaColumn, deltaRow] = this.directionToDelta(direction);
+        const [deltaColumn, deltaRow] = directionToDelta(direction);
         const from = this.findEnd(level, column, row, -deltaColumn, -deltaRow);
         const to = this.findEnd(level, column, row, deltaColumn, deltaRow);
         this.from.set(grid.cellToWorld(from.column, from.row));
@@ -51,15 +50,6 @@ export class Bat extends Component {
         );
     }
 
-    private directionToDelta(direction: BatDirection): [number, number] {
-        switch (direction) {
-            case 'top': return [0, -1];
-            case 'down': return [0, 1];
-            case 'left': return [-1, 0];
-            case 'right': return [1, 0];
-        }
-    }
-
     private findEnd(level: readonly (readonly string[])[], column: number, row: number, deltaColumn: number, deltaRow: number): { column: number; row: number } {
         while (true) {
             const nextColumn = column + deltaColumn;
@@ -70,5 +60,5 @@ export class Bat extends Component {
         }
     }
 
-    private isWall(cell: string): boolean { return cell.includes('#') || cell.includes('^'); }
+    private isWall(cell: string): boolean { return cell.includes('#') || cell.includes('^') || cell.includes('T'); }
 }

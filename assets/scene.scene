@@ -635,6 +635,10 @@
       "__uuid__": "0f01f567-96b0-4142-b537-8aba46a07f6b",
       "__expectedType__": "cc.Prefab"
     },
+    "turretPrefab": {
+      "__uuid__": "3a97bd79-ddeb-4e41-b78d-1647932ee5e1",
+      "__expectedType__": "cc.Prefab"
+    },
     "enemyParent": {
       "__id__": 10
     },

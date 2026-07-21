@@ -5,7 +5,9 @@ import { DoubleTileRenderer } from './DoubleTileRenderer';
 import { PlayerController } from '../Player/PlayerController';
 import { PlayerDamage, PLAYER_DIED } from '../Player/PlayerDamage';
 import { Collectible, CollectibleKind } from '../Collectibles/Collectible';
-import { Bat, type BatDirection } from '../Enemies/Bat';
+import { Bat } from '../Enemies/Bat';
+import { Turret } from '../Enemies/Turret';
+import { CellDirection } from '../Enemies/CellDirection';
 import { HitBox } from '../Enemies/HitBox';
 import { UI_GameController } from '../../UI/UI_GameController';
 import type { LevelConfig } from '../../Infrastructure/LevelLibrary';
@@ -32,6 +34,7 @@ export class LevelBuilder extends Component {
     @property({ group: { name: 'Collectibles' } }) public coinWaveDelayPerCell = 0.04;
 
     @property({ type: Prefab, group: { name: 'Enemies' } }) public batPrefab: Prefab | null = null;
+    @property({ type: Prefab, group: { name: 'Enemies' } }) public turretPrefab: Prefab | null = null;
     @property({ type: Node, group: { name: 'Enemies' } }) public enemyParent: Node | null = null;
 
     private player: PlayerController | null = null;
@@ -106,24 +109,47 @@ export class LevelBuilder extends Component {
 
     private spawnEnemies(level: readonly (readonly string[])[], playerDamage: PlayerDamage): void {
         for (let row = 0; row < level.length; row++) for (let column = 0; column < level[row].length; column++) {
-            const direction = this.getBatDirection(level[row][column]);
-            if (!direction) continue;
-            if (!this.enemyParent || !this.batPrefab) {
-                console.error('[LevelBuilder] Missing Enemy Parent or Bat Prefab');
-                return;
-            }
-            const node = instantiate(this.batPrefab);
-            const bat = node.getComponent(Bat);
-            const hitBox = node.getComponent(HitBox);
-            if (!bat || !hitBox) {
-                console.error('[LevelBuilder] Bat Prefab missing Bat or HitBox');
-                node.destroy();
-                return;
-            }
-            this.enemyParent.addChild(node);
-            bat.configure(this.grid, level, column, row, direction);
-            hitBox.configure(playerDamage);
+            const cell = level[row][column];
+            const batDirection = this.getDirection(cell, 'B');
+            if (batDirection) this.spawnBat(level, playerDamage, column, row, batDirection);
+            const turretDirection = this.getDirection(cell, 'T');
+            if (turretDirection) this.spawnTurret(level, playerDamage, column, row, turretDirection);
         }
+    }
+
+    private spawnBat(level: readonly (readonly string[])[], playerDamage: PlayerDamage, column: number, row: number, direction: CellDirection): void {
+        if (!this.enemyParent || !this.batPrefab) {
+            console.error('[LevelBuilder] Missing Enemy Parent or Bat Prefab');
+            return;
+        }
+        const node = instantiate(this.batPrefab);
+        const bat = node.getComponent(Bat);
+        const hitBox = node.getComponent(HitBox);
+        if (!bat || !hitBox) {
+            console.error('[LevelBuilder] Bat Prefab missing Bat or HitBox');
+            node.destroy();
+            return;
+        }
+        this.enemyParent.addChild(node);
+        bat.configure(this.grid, level, column, row, direction);
+        hitBox.configure(playerDamage);
+    }
+
+    private spawnTurret(level: readonly (readonly string[])[], playerDamage: PlayerDamage, column: number, row: number, direction: CellDirection): void {
+        if (!this.enemyParent || !this.turretPrefab) {
+            console.error('[LevelBuilder] Missing Enemy Parent or Turret Prefab');
+            return;
+        }
+        const node = instantiate(this.turretPrefab);
+        const turret = node.getComponent(Turret);
+        if (!turret) {
+            console.error('[LevelBuilder] Turret Prefab missing Turret');
+            node.destroy();
+            return;
+        }
+        this.enemyParent.addChild(node);
+        node.setPosition(this.grid.cellToWorld(column, row));
+        turret.configure(this.grid, level, column, row, direction, playerDamage);
     }
 
     private spawnCollectibles(level: LevelConfig, player: PlayerController): void {
@@ -180,10 +206,10 @@ export class LevelBuilder extends Component {
         return cell.includes('G') ? CollectibleKind.CoinBoost : null;
     }
 
-    private getBatDirection(cell: string): BatDirection | null {
-        const index = cell.indexOf('B');
-        return index < 0 ? null : ['top', 'down', 'left', 'right'][index] as BatDirection;
+    private getDirection(cell: string, symbol: string): CellDirection | null {
+        const index = cell.indexOf(symbol);
+        return index < 0 ? null : ['top', 'down', 'left', 'right'][index] as CellDirection;
     }
 
-    private isWall(cell: string | undefined): boolean { return cell?.includes('#') || cell?.includes('^') || false; }
+    private isWall(cell: string | undefined): boolean { return cell?.includes('#') || cell?.includes('^') || cell?.includes('T') || false; }
 }
