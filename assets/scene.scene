@@ -639,6 +639,10 @@
       "__uuid__": "3a97bd79-ddeb-4e41-b78d-1647932ee5e1",
       "__expectedType__": "cc.Prefab"
     },
+    "fishPrefab": {
+      "__uuid__": "0c71cbc3-d076-4ac4-8403-696a091e9e59",
+      "__expectedType__": "cc.Prefab"
+    },
     "enemyParent": {
       "__id__": 10
     },
