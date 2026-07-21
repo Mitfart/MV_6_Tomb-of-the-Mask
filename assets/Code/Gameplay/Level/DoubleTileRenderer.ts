@@ -72,7 +72,7 @@ export class DoubleTileRenderer extends Component {
     }
 
     private isWall(level: readonly (readonly string[])[], column: number, row: number): boolean {
-        if (row < 0 || row >= level.length * 2 || column < 0 || column >= level[0].length * 2) return false;
+        if (row < 0 || row >= level.length * 2 || column < 0 || column >= level[0].length * 2) return true;
         const cell = level[Math.floor(row / 2)][Math.floor(column / 2)];
         return cell.includes('T') || this.isSolid(cell[row % 2]) || this.isSolid(cell[column % 2 + 2]);
     }
