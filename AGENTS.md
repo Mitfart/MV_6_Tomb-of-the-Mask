@@ -18,7 +18,7 @@ Cocos Creator 3.8.8 playable: **Tomb of the Mask: Old Maze**. Shared engine: `as
 
 ## Game contracts
 
-- Level cell: `[top, down, left, right]`; `#` wall, `^` spike, `.` empty, `P` spawn.
+- Level cell: `[top, down, left, right]`; `#` wall, `^` spike, `.` empty, `P` spawn, `B` bat, `o` point, `C` coin, `G` coin boost. B position sets first move direction.
 - `DoubleTileRenderer`: exposed-side corner/line/inner-corner frames; spikes use directional `HalfTileLite`.
 - `LevelBuilder` spawns `player.prefab`, forwards `PLAYER_DIED` to `GameManager`; scene assigns Player Prefab + dedicated Player Parent.
 - Art: `e_` enemies require Player-damaging HitBox; `item_` collectibles; `tile_` walls. Tile suffixes `t/l/r/b/c`, `i` inner corner. Do not rotate 15-frame dual-grid art.

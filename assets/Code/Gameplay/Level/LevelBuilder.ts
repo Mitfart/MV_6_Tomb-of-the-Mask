@@ -5,6 +5,8 @@ import { DoubleTileRenderer } from './DoubleTileRenderer';
 import { PlayerController } from '../Player/PlayerController';
 import { PlayerDamage, PLAYER_DIED } from '../Player/PlayerDamage';
 import { Collectible, CollectibleKind } from '../Collectibles/Collectible';
+import { Bat, type BatDirection } from '../Enemies/Bat';
+import { HitBox } from '../Enemies/HitBox';
 import { UI_GameController } from '../../UI/UI_GameController';
 import type { LevelConfig } from '../../Infrastructure/LevelLibrary';
 
@@ -29,16 +31,20 @@ export class LevelBuilder extends Component {
     @property({ type: Node, group: { name: 'Collectibles' } }) public collectibleParent: Node | null = null;
     @property({ group: { name: 'Collectibles' } }) public coinWaveDelayPerCell = 0.04;
 
+    @property({ type: Prefab, group: { name: 'Enemies' } }) public batPrefab: Prefab | null = null;
+    @property({ type: Node, group: { name: 'Enemies' } }) public enemyParent: Node | null = null;
+
     private player: PlayerController | null = null;
     private ui: UI_GameController | null = null;
     private collectibles: Collectible[] = [];
+    private spikeHitBoxes: HitBox[] = [];
 
     public setUIController(ui: UI_GameController | null): void {
         this.ui = ui;
     }
 
     public build(config: LevelConfig): void {
-        const level = config.cells;
+        const level = config;
         const start = this.validate(level);
         if (!start) {
             console.error('[LevelBuilder] Invalid level');
@@ -48,7 +54,9 @@ export class LevelBuilder extends Component {
         this.wallParent.removeAllChildren();
         this.spikeParent.removeAllChildren();
         this.collectibleParent?.removeAllChildren();
+        this.enemyParent?.removeAllChildren();
         this.collectibles = [];
+        this.spikeHitBoxes = [];
         this.ui?.resetCoins();
         this.tileRenderer.render(level);
         for (let row = 0; row < level.length; row++) for (let column = 0; column < level[row].length; column++) {
@@ -72,6 +80,9 @@ export class LevelBuilder extends Component {
                 halfTile.setVariant(this.tileRenderer.getSpikeVariant(cell, halfColumn, halfRow));
                 spike.setPosition(center.x + (halfColumn ? offset : -offset), center.y + (halfRow ? -offset : offset));
                 this.spikeParent.addChild(spike);
+                const hitBox = spike.getComponent(HitBox);
+                if (!hitBox) console.error('[LevelBuilder] Spike Prefab missing HitBox');
+                else this.spikeHitBoxes.push(hitBox);
             }
         }
         this.player?.node.destroy();
@@ -88,15 +99,41 @@ export class LevelBuilder extends Component {
         player.grid = this.grid;
         damage.node.on(PLAYER_DIED, this.onPlayerDied, this);
         player.configure(level, start.x, start.y);
-        this.spawnCollectibles(config, player);
+        for (const hitBox of this.spikeHitBoxes) hitBox.configure(damage);
+        this.spawnCollectibles(level, player);
+        this.spawnEnemies(level, damage);
     }
 
-    private spawnCollectibles(config: LevelConfig, player: PlayerController): void {
+    private spawnEnemies(level: readonly (readonly string[])[], playerDamage: PlayerDamage): void {
+        for (let row = 0; row < level.length; row++) for (let column = 0; column < level[row].length; column++) {
+            const direction = this.getBatDirection(level[row][column]);
+            if (!direction) continue;
+            if (!this.enemyParent || !this.batPrefab) {
+                console.error('[LevelBuilder] Missing Enemy Parent or Bat Prefab');
+                return;
+            }
+            const node = instantiate(this.batPrefab);
+            const bat = node.getComponent(Bat);
+            const hitBox = node.getComponent(HitBox);
+            if (!bat || !hitBox) {
+                console.error('[LevelBuilder] Bat Prefab missing Bat or HitBox');
+                node.destroy();
+                return;
+            }
+            this.enemyParent.addChild(node);
+            bat.configure(this.grid, level, column, row, direction);
+            hitBox.configure(playerDamage);
+        }
+    }
+
+    private spawnCollectibles(level: LevelConfig, player: PlayerController): void {
         if (!this.collectibleParent) return;
-        for (const item of config.collectibles ?? []) {
-            const prefab = item.kind === 'point' ? this.pointPrefab : item.kind === 'coin' ? this.coinPrefab : this.coinBoostPrefab;
+        for (let row = 0; row < level.length; row++) for (let column = 0; column < level[row].length; column++) {
+            const kind = this.getCollectibleKind(level[row][column]);
+            if (kind === null) continue;
+            const prefab = kind === CollectibleKind.Point ? this.pointPrefab : kind === CollectibleKind.Coin ? this.coinPrefab : this.coinBoostPrefab;
             if (!prefab) {
-                console.error(`[LevelBuilder] Missing ${item.kind} Prefab`);
+                console.error('[LevelBuilder] Missing collectible Prefab');
                 return;
             }
             const node = instantiate(prefab);
@@ -106,9 +143,9 @@ export class LevelBuilder extends Component {
                 node.destroy();
                 return;
             }
-            node.setPosition(this.grid.cellToWorld(item.x, item.y));
+            node.setPosition(this.grid.cellToWorld(column, row));
             this.collectibleParent.addChild(node);
-            collectible.configure(item.kind === 'point' ? CollectibleKind.Point : item.kind === 'coin' ? CollectibleKind.Coin : CollectibleKind.CoinBoost, player, this.ui, this.activateCoinBoost);
+            collectible.configure(kind, player, this.ui, this.activateCoinBoost);
             this.collectibles.push(collectible);
         }
     }
@@ -135,6 +172,17 @@ export class LevelBuilder extends Component {
             }
         }
         return start;
+    }
+
+    private getCollectibleKind(cell: string): CollectibleKind | null {
+        if (cell.includes('o')) return CollectibleKind.Point;
+        if (cell.includes('C')) return CollectibleKind.Coin;
+        return cell.includes('G') ? CollectibleKind.CoinBoost : null;
+    }
+
+    private getBatDirection(cell: string): BatDirection | null {
+        const index = cell.indexOf('B');
+        return index < 0 ? null : ['top', 'down', 'left', 'right'][index] as BatDirection;
     }
 
     private isWall(cell: string | undefined): boolean { return cell?.includes('#') || cell?.includes('^') || false; }
