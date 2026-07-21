@@ -7,6 +7,7 @@ import { PlayerDamage, PLAYER_DIED } from '../Player/PlayerDamage';
 import { Collectible, CollectibleKind } from '../Collectibles/Collectible';
 import { Bat } from '../Enemies/Bat';
 import { Turret } from '../Enemies/Turret';
+import { Fish } from '../Enemies/Fish';
 import { CellDirection } from '../Enemies/CellDirection';
 import { HitBox } from '../Enemies/HitBox';
 import { UI_GameController } from '../../UI/UI_GameController';
@@ -35,6 +36,7 @@ export class LevelBuilder extends Component {
 
     @property({ type: Prefab, group: { name: 'Enemies' } }) public batPrefab: Prefab | null = null;
     @property({ type: Prefab, group: { name: 'Enemies' } }) public turretPrefab: Prefab | null = null;
+    @property({ type: Prefab, group: { name: 'Enemies' } }) public fishPrefab: Prefab | null = null;
     @property({ type: Node, group: { name: 'Enemies' } }) public enemyParent: Node | null = null;
 
     private player: PlayerController | null = null;
@@ -64,7 +66,7 @@ export class LevelBuilder extends Component {
         this.tileRenderer.render(level);
         for (let row = 0; row < level.length; row++) for (let column = 0; column < level[row].length; column++) {
             const cell = level[row][column];
-            if (this.isWall(cell)) {
+            if (this.isWall(cell) && !cell.includes('^')) {
                 const wall = instantiate(this.wallColliderPrefab);
                 wall.setPosition(this.grid.cellToWorld(column, row));
                 this.wallParent.addChild(wall);
@@ -114,6 +116,7 @@ export class LevelBuilder extends Component {
             if (batDirection) this.spawnBat(level, playerDamage, column, row, batDirection);
             const turretDirection = this.getDirection(cell, 'T');
             if (turretDirection) this.spawnTurret(level, playerDamage, column, row, turretDirection);
+            if (cell.includes('F')) this.spawnFish(playerDamage, column, row);
         }
     }
 
@@ -132,6 +135,25 @@ export class LevelBuilder extends Component {
         }
         this.enemyParent.addChild(node);
         bat.configure(this.grid, level, column, row, direction);
+        hitBox.configure(playerDamage);
+    }
+
+    private spawnFish(playerDamage: PlayerDamage, column: number, row: number): void {
+        if (!this.enemyParent || !this.fishPrefab) {
+            console.error('[LevelBuilder] Missing Enemy Parent or Fish Prefab');
+            return;
+        }
+        const node = instantiate(this.fishPrefab);
+        const fish = node.getComponent(Fish);
+        const hitBox = node.getComponent(HitBox);
+        if (!fish || !hitBox) {
+            console.error('[LevelBuilder] Fish Prefab missing Fish or HitBox');
+            node.destroy();
+            return;
+        }
+        this.enemyParent.addChild(node);
+        node.setPosition(this.grid.cellToWorld(column, row));
+        fish.configure(this.grid.cellSize);
         hitBox.configure(playerDamage);
     }
 

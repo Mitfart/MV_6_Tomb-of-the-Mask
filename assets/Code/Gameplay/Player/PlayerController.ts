@@ -140,10 +140,14 @@ export class PlayerController extends Component {
         const candidate = this.cell.clone();
         while (true) {
             const next = new Vec2(candidate.x + direction.x, candidate.y - direction.y);
-            if (next.y < 0 || next.y >= this.level.length || next.x < 0 || next.x >= this.level[0].length || this.isWall(this.level[next.y][next.x])) return candidate;
+            if (next.y < 0 || next.y >= this.level.length || next.x < 0 || next.x >= this.level[0].length || this.isWall(this.level[next.y][next.x], direction)) return candidate;
             candidate.set(next);
         }
     }
 
-    private isWall(cell: string | undefined): boolean { return cell?.includes('#') || cell?.includes('^') || cell?.includes('T') || false; }
+    private isWall(cell: string | undefined, direction: Readonly<Vec2>): boolean {
+        if (!cell || cell.includes('T')) return true;
+        const edge = direction.x > 0 ? 2 : direction.x < 0 ? 3 : direction.y > 0 ? 1 : 0;
+        return cell[edge] === '#';
+    }
 }

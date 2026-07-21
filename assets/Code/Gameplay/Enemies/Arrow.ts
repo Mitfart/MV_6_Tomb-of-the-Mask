@@ -1,4 +1,4 @@
-import { _decorator, Component, Vec3 } from 'cc';
+import { _decorator, Component, tween, Tween, Vec3 } from 'cc';
 import { GridService } from '../../../Cocos_Engine/General/Code/grid/GridService';
 import { CellDirection, directionToDelta } from './CellDirection';
 
@@ -9,11 +9,18 @@ export class Arrow extends Component {
     @property
     public cellsPerSecond = 4;
 
+    @property
+    public popDuration = 0.08;
+
     private grid: GridService | null = null;
+    private baseScale = new Vec3();
     private target = new Vec3();
 
     public configure(grid: GridService, level: readonly (readonly string[])[], column: number, row: number, direction: CellDirection): void {
         this.grid = grid;
+        const scale = this.node.scale;
+        this.baseScale.set(direction === 'right' ? -Math.abs(scale.x) : Math.abs(scale.x), scale.y, scale.z);
+        this.node.angle = direction === 'top' ? -90 : direction === 'down' ? 90 : 0;
         const start = grid.cellToWorld(column, row);
         const [deltaColumn, deltaRow] = directionToDelta(direction);
         while (true) {
@@ -28,6 +35,12 @@ export class Arrow extends Component {
             start.x + deltaColumn * grid.cellSize * 0.5,
             start.y - deltaRow * grid.cellSize * 0.5,
         );
+        this.node.setScale(0, 0, this.baseScale.z);
+        tween(this.node).to(this.popDuration, { scale: this.baseScale }).start();
+    }
+
+    protected onDisable(): void {
+        Tween.stopAllByTarget(this.node);
     }
 
     protected update(deltaTime: number): void {
