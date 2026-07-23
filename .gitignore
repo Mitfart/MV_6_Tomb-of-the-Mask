@@ -23,6 +23,8 @@ node_modules/
 #//////////////////////////
 .idea/
 
+_TASK/
+
 # Large source/deliverable files. Keep scripts, sprites, and audio tracked.
 *.7z
 *.bz2
